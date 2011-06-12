@@ -4,8 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-    <TextView android:id="@+id/textView1" android:text="@string/appHelloText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="100dip"></TextView>
-    <Button android:layout_height="wrap_content" android:layout_width="200dip" android:text="@string/startGameButton" android:layout_marginLeft="60dip" android:layout_marginTop="60dip" android:id="@+id/btnNewGame"></Button>
-    <Button android:layout_height="wrap_content" android:layout_width="200dip" android:text="@string/highscoreButton" android:layout_marginLeft="60dip" android:layout_marginTop="20dip" android:id="@+id/btnHighscore"></Button>
-    <Button android:layout_height="wrap_content" android:layout_width="200dip" android:layout_marginLeft="60dip" android:layout_marginTop="20dip" android:text="@string/infoButton" android:id="@+id/btnInformation"></Button>
+    <de.movingLine.game.GameView android:id="@+id/gameView" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+
+
 </LinearLayout>
