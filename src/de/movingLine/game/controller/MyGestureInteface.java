@@ -1,4 +1,4 @@
-package de.movingLine.game;
+package de.movingLine.game.controller;
 
 public interface MyGestureInteface {
 
@@ -8,5 +8,4 @@ public interface MyGestureInteface {
     public static final String EAST = "EAST";
 	
 	public void setFlingDirection(String direction);
-
 }

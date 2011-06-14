@@ -1,4 +1,4 @@
-package de.movingLine.game;
+package de.movingLine.game.controller;
 
 import android.view.MotionEvent;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -48,15 +48,4 @@ public class MyGestureDetector extends SimpleOnGestureListener {
 		
 		return super.onFling(e1, e2, velocityX, velocityY);
 	}
-	
-	@Override
-	public boolean onSingleTapConfirmed(MotionEvent e) {
-		return super.onSingleTapConfirmed(e);
-	}
-	
-    // It is necessary to return true from onDown for the onFling event to register
-    @Override
-    public boolean onDown(MotionEvent e) {
-        	return true;
-    }
 }
