@@ -5,4 +5,10 @@
     <string name="startGameButton">Start Game</string>
     <string name="highscoreButton">Highscore</string>
     <string name="infoButton">Information</string>
+    <string-array name="contextMenu">
+        <item>Pause</item>
+        <item>Beenden</item>
+        <item>Info</item>
+    </string-array>
+    <string name="version">v0.5</string>
 </resources>
