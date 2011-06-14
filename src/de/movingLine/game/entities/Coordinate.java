@@ -1,4 +1,4 @@
-package de.movingLine.game;
+package de.movingLine.game.entities;
 
 public class Coordinate {
 
