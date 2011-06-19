@@ -1,6 +1,6 @@
 package de.movingLine.game;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,17 +12,33 @@ import android.os.Message;
 import android.util.AttributeSet;
 import android.view.View;
 import de.movingLine.R;
-
+import de.movingLine.game.controller.CollisionDetector;
+import de.movingLine.game.controller.MyGestureInteface;
+import de.movingLine.game.entities.Bonus;
+import de.movingLine.game.entities.Coordinate;
+import de.movingLine.game.entities.Snake;
+import de.movingLine.game.holder.BonusHolder;
+/**
+ * 
+ * @author Royalclass
+ * This is the MainGameView and the MainGameHandler
+ */
 public class GameView extends View implements MyGestureInteface {
 
-	// the Sleep time for the Thread
-	public static int FRAMES = 2000;
+	// Sleep time for the Thread
+	public static int FRAMES = 400;
 
-	// The Snake or the Snake Handler
+	// Snake Handler
 	private Snake snake = new Snake();
+	
+	private BonusHolder bonusHolder = new BonusHolder();
+	private CollisionDetector collisonDetector = null;
+	
 	private boolean gameOver = false;
+	private boolean pause = false;
 
 	private String nextDirection;
+	private String lastDirection;
 	
 	// RefreshHandler acting like a Thread
 	private RefreshHandler mRedrawHandler = new RefreshHandler();
@@ -30,6 +46,7 @@ public class GameView extends View implements MyGestureInteface {
 	// Objects to Paint on the Canvas
 	private Bitmap bitmap_body = BitmapFactory.decodeResource(getResources(),R.drawable.green);
 	private Bitmap bitmap_head = BitmapFactory.decodeResource(getResources(),R.drawable.yellow);
+	private Bitmap bitmap_boni = BitmapFactory.decodeResource(getResources(),R.drawable.apple);
 	private Bitmap bitmap_gameOver = BitmapFactory.decodeResource(getResources(),R.drawable.gameover);
 	private Paint p = new Paint();
 
@@ -47,7 +64,7 @@ public class GameView extends View implements MyGestureInteface {
 	 * init the Snake first the head and then i can add the next Coordinates with a direction
 	 */
 	private void init() {
-		snake.addBody(new Coordinate(120, 120));
+		snake.addSnake(new Coordinate(240,180));
 		snake.addY(Snake.YSOUTH);
 		snake.addY(Snake.YSOUTH);
 		snake.addY(Snake.YSOUTH);
@@ -58,6 +75,7 @@ public class GameView extends View implements MyGestureInteface {
 		snake.addX(Snake.YSOUTH);
 		
 		nextDirection = MyGestureInteface.NORTH;
+		lastDirection = MyGestureInteface.NORTH;
 		update();
 	}
 
@@ -68,73 +86,89 @@ public class GameView extends View implements MyGestureInteface {
 	@Override
 	protected void onDraw(Canvas canvas) {
 
-		if(gameOver){
-			canvas.drawBitmap(bitmap_gameOver, this.getWidth()/2-100, this.getHeight()/2-50, p);
-			//TODO search for a method to stop the RefreshHandler
-		}
-		else{	
-			ArrayList<Coordinate> body = snake.getBody();
-			for (int i = 0; i < snake.size(); i++) {
+		if (gameOver) {
+			canvas.drawBitmap(bitmap_gameOver, this.getWidth() / 2 - 100, this.getHeight() / 2 - 50, p);
+			mRedrawHandler.removeMessages(0);
+		} 
+		else {
+			List<Coordinate> body = snake.getSnake();
+			for (int i = 0; i < body.size(); i++) {
 				if (i == 0) {
 					canvas.drawBitmap(bitmap_head, body.get(i).getX(), body.get(i).getY(), p);
-				} else {
+				} 
+				else {
 					canvas.drawBitmap(bitmap_body, body.get(i).getX(), body.get(i).getY(), p);
 				}
 
-		}
+			}
+			
+			bonusHolder.checkTimeToCatch();
+			List<Bonus> boni = bonusHolder.getBoni();
+			
+			for (int i = 0; i < boni.size(); i++) {
+				canvas.drawBitmap(bitmap_boni, boni.get(i).getX(), boni.get(i).getY(), p);
+			}
+			
 		}
 		super.onDraw(canvas);
 	}
 
 	/**
 	 * This is were you can control the snake
-	 * TODO: Maybe the equals is not so good, thinking of another solution
 	 */
 	private void update() {
-			if (nextDirection.equals("NORTH")) {
+		
+			if (nextDirection.equals(MyGestureInteface.NORTH)) {
 				snake.moveNorth();
 			}
-			if (nextDirection.equals("SOUTH")) {
+			else if (nextDirection.equals(MyGestureInteface.SOUTH)) {
 				snake.moveSouth();
 			}
-			if (nextDirection.equals("EAST")) {
+			else if (nextDirection.equals(MyGestureInteface.EAST)) {
 				snake.moveEast();
 			}
-			if (nextDirection.equals("WEST")) {
+			else if (nextDirection.equals(MyGestureInteface.WEST)) {
 				snake.moveWest();
 			}
-			System.out.println("X:"+ snake.getBody().get(0).getX());
-			System.out.println("Y:"+ snake.getBody().get(0).getY());
-			System.out.println("LEFT: "+ this.getLeft());
-			System.out.println("RIGHT: " +this.getRight());
-			System.out.println("UP: " + this.getTop());
-			System.out.println("DOWN: "+this.getBottom());
-			
-			collisionDetection();
-		mRedrawHandler.sleep(FRAMES);
-	}
-	
-	private void collisionDetection() {
 		
-		//check if the snake head is crashing into a wall
-		if(snake.getBody().get(0).getX() > this.getLeft() || snake.getBody().get(0).getX() > this.getRight()-30){
-			System.out.println("left or right crash");
-//			gameOver = true;
-		}
-		if(snake.getBody().get(0).getY() < 690 || snake.getBody().get(0).getY() > this.getTop()){
-			System.out.println("up or down crash");
-//			gameOver = true;
-		}
+		bonusHolder.generateBoni();
+		
+		// TODO: i don't know why, but this.getMeasuredWidht and Height is 0
+		// on the first call
+		if(collisonDetector == null && this.getMeasuredHeight() != 0 && this.getMeasuredWidth() != 0)
+			collisonDetector = new CollisionDetector(this.getMeasuredWidth(), this.getMeasuredHeight(), snake, bonusHolder);
+			
+		if(collisonDetector != null)
+		gameOver = collisonDetector.detect();
+		
+		
+		mRedrawHandler.sleep(FRAMES);
 	}
 
 	@Override
 	public void setFlingDirection(String direction) {
+		lastDirection = nextDirection;
 		nextDirection = direction;
+	}
+	
+	public void setPause(boolean pause) {
+		
+		this.pause = pause;
+		
+		//if the game should run then fire an event to the RefreshHandler
+		if(!pause){
+			mRedrawHandler.sleep(FRAMES);
+		}
+		
+	}
+	
+	public boolean getPause() {
+		return pause;
 	}
 	
 	/**
 	 * This is a private Class, it's an RefreshHandler
-	 * u can use it like a Thread to draw the bitmaps over and over again
+	 * u can use it like a Thread to let draw the bitmaps over and over again
 	 */
 	class RefreshHandler extends Handler {
 
@@ -145,8 +179,11 @@ public class GameView extends View implements MyGestureInteface {
 		}
 
 		public void sleep(long delayMillis) {
-			this.removeMessages(0);
-			sendMessageDelayed(obtainMessage(0), delayMillis);
+			if(!getPause()) {
+
+				this.removeMessages(0);
+				sendMessageDelayed(obtainMessage(0), delayMillis);
+			}
 		}
 	}
 }
