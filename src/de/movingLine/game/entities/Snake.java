@@ -5,6 +5,8 @@ import java.util.List;
 
 public class Snake {
 
+	public final static int snakeBodyPart = 30;
+	
 	// These are the variables to set the next image 30 pixels left,right,up or down
 	public final static int YNORTH = -30;
 	public final static int YSOUTH = 30;
@@ -31,16 +33,17 @@ public class Snake {
 	public void addX(int position) {
 		Coordinate lastCoordinate = snake.get(snake.size() - 1);
 
-		Coordinate c = new Coordinate(lastCoordinate.getX() + position,
-				lastCoordinate.getY());
+		Coordinate c = new Coordinate(lastCoordinate.getX() + position,lastCoordinate.getY());
 		snake.add(c);
 	}
-
-	public int size() {
-		return snake.size();
+	
+	public void addTile() {
+		Coordinate lastTile = snake.get(snake.size()-1);
+		Coordinate newTile = new Coordinate(lastTile.getX(), lastTile.getY());
+		snake.add(newTile);
 	}
 
-	//Sets always the last tile so that it is before the first
+	//Sets always the last tile that it is before the first
 	public void moveNorth() {
 
 		List<Coordinate> newSnake = new ArrayList<Coordinate>();
